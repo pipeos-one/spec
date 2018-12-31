@@ -1,5 +1,4 @@
 
-
 [<package>Package
 	|
 	_id: string
@@ -49,8 +48,8 @@
 	packageId: string
 	module: string
 	name: string (contract_alias)
-	type: string (sol/js/openapi/py)
-	class: SolClass / JsClass ;/ OpenApiClass / PyClass ;/ HtmlClass
+	type: string (sol/js/oapi/py)
+	class: SolClass / JsClass ;/ OApiClass / PyClass ;/ HtmlClass
 	composite: string Array (or {type: _id array})
 	uri?: string
 	functions?: PipeFunction Array
@@ -63,7 +62,7 @@
 [<abstract>AbstractClass
 	|
 	[.
-		|abi: AbiFunction Array
+		|gapi: GapiFunction Array
 		natspec: object (Devdoc + Userdoc)
 		sources: Source Array
 		flatsource?: string (flattened)
@@ -81,7 +80,7 @@
 [SolClass
 	|
 	name: string (contract_name)
-	abi: AbiFunction Array
+	gapi: GapiFunction Array
 	natspec: object (Devdoc + Userdoc)
 	deployment_bytecode: Bytecode
 	runtime_bytecode: Bytecode
@@ -94,10 +93,10 @@
   exported: string
 ]
 
-[OpenApiClass
+[OApiClass
   |
   exported: string
-  openapiid: string
+  oapiid: string
 ]
 
 
@@ -143,7 +142,7 @@
 	_id: string
 	packageId: string
 	classid: string
-	instance: SolInstance / OpenApiInstance
+	instance: SolInstance / OApiInstance
 	timestamp: Date
 ]
 
@@ -160,11 +159,11 @@
 	constructorArgs?: string
 ]
 
-[OpenApiInstance
+[OApiInstance
 	|
 	host: string
 	basePath: string
-	openapiid?: string
+	oapiid?: string
 ]
 
 [<package>PFunction
@@ -180,7 +179,7 @@
 
 [<abstract>AbstractFunction
 	|
-	abi: AbiFunction
+	gapi: GapiFunction
 	natspec: object
 	source: string
 	signature?: string
@@ -215,7 +214,7 @@
 
 
 [AbstractClass]<:-[JsClass]
-[AbstractClass]<:-[OpenApiClass]
+[AbstractClass]<:-[OApiClass]
 [AbstractClass]<:-[SolClass]
 
 [SolClass]+->2[Bytecode]
@@ -234,14 +233,14 @@
 [PClassInstance]->1[AbstractInstance]
 
 [AbstractInstance]<:-[SolInstance]
-[AbstractInstance]<:-[OpenApiInstance]
+[AbstractInstance]<:-[OApiInstance]
 
 
 [PClass]+-> 0..*[PFunction]
 
 [PFunction]+-> 1[AbstractFunction]
 [AbstractFunction]<:-[JsFunction]
-[AbstractFunction]<:-[OpenApiFunction]
+[AbstractFunction]<:-[OApiFunction]
 [AbstractFunction]<:-[SolFunction]
 
 [Graph]->[DStorage]
