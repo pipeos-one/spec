@@ -1,0 +1,248 @@
+
+
+[<package>Package
+	|
+	_id: string
+	package_json: string
+	storage: DStorage
+	package: EthPM
+	modules: stringArray
+]
+
+[<abstract>AbstractPackage]
+
+[EthPM
+	|
+	[.
+		|
+		manifest_version*: string (2)
+		package_name*: string
+		version*: string
+		meta: Meta
+		contracts: stringArray (PClass ids)
+		deployments: Deployment Array
+		build_dependencies: stringArray (Package ids)
+	]
+	[Meta
+		|
+		authors: stringArray
+		license: string
+		description: string
+		keywords: stringArray
+		links: Links
+	]
+	[Deployment
+		|
+		chain_id: string
+		genesis_hash: string
+		block_hash: string
+		bip122_uri: string
+		instanceid: string
+	]
+	[.]+-> 0..*[Deployment]
+	[.]-> [Meta]
+]
+
+[<package>PClass
+	|
+	_id: string
+	packageId: string
+	module: string
+	name: string (contract_alias)
+	type: string (sol/js/openapi/py)
+	class: SolClass / JsClass ;/ OpenApiClass / PyClass ;/ HtmlClass
+	composite: string Array (or {type: _id array})
+	uri?: string
+	functions?: PipeFunction Array
+	tags: string Array (+project)
+	project?: string
+	chainids: string Array
+	timestamp: Date
+]
+
+[<abstract>AbstractClass
+	|
+	[.
+		|abi: AbiFunction Array
+		natspec: object (Devdoc + Userdoc)
+		sources: Source Array
+		flatsource?: string (flattened)
+		flatsource_hash?: string
+	]
+	[Source
+		|
+	  relative_path: string
+	  source: string
+	  storage: DStorage
+	]
+	[.]+-> 0..*[Source]
+]
+
+[SolClass
+	|
+	name: string (contract_name)
+	abi: AbiFunction Array
+	natspec: object (Devdoc + Userdoc)
+	deployment_bytecode: Bytecode
+	runtime_bytecode: Bytecode
+	metadata: string (?)
+	compiler: Compiler
+]
+
+[JsClass
+  |
+  exported: string
+]
+
+[OpenApiClass
+  |
+  exported: string
+  openapiid: string
+]
+
+
+[Bytecode
+	|
+	bytecode: string (0x..)
+	link_references?: LinkReference Array
+	link_dependencies?: LinkValue Array
+]
+
+[LinkReference
+	|
+	offsets*: integer Array
+	length*: integer
+	name*: string
+]
+
+[LinkValue
+	|
+	offsets*: integer Array
+	type*: string (literal / reference)
+	value*: string (byte string / contract name)
+]
+
+[Compiler
+	|
+	name: string
+	version: string (0.4.8-commit.60cc1668)
+	settings: CompilerInputOutputJSON
+]
+
+
+
+[DStorage
+	|
+	hash: string
+	type: string (ipfs/bzz)
+]
+
+
+[<package>PClassInstance
+	|
+	_id: string
+	packageId: string
+	classid: string
+	instance: SolInstance / OpenApiInstance
+	timestamp: Date
+]
+
+[<abstract>AbstractInstance]
+
+[SolInstance
+	|
+	address: string
+	transaction?: string (0x)
+	block?: string (0x)
+	runtime_bytecode: Bytecode (? + constructor args?)
+	compiler: Compiler
+	chainid: string
+	constructorArgs?: string
+]
+
+[OpenApiInstance
+	|
+	host: string
+	basePath: string
+	openapiid?: string
+]
+
+[<package>PFunction
+	|
+	_id: string
+	classid: string
+	graph?: object
+	func: SolFunction / JsFunction etc.
+	tags?: stringArray
+	uri?: string
+	timestamp: Date
+]
+
+[<abstract>AbstractFunction
+	|
+	abi: AbiFunction
+	natspec: object
+	source: string
+	signature?: string
+]
+
+
+[SolFunction
+	|
+	chainids: stringArray
+]
+
+[<package>Graph
+	|
+	_id: string
+	json: object
+	name: string
+	storage: DStorage
+	functions: PFunction _id array
+]
+
+
+[Package]+->1[DStorage]
+
+[Package]+-> 1[AbstractPackage]
+
+[AbstractPackage]<:-[EthPM]
+
+[EthPM]+-> 0..*[PClass]
+
+
+[PClass]+-> 1[AbstractClass]
+
+
+[AbstractClass]<:-[JsClass]
+[AbstractClass]<:-[OpenApiClass]
+[AbstractClass]<:-[SolClass]
+
+[SolClass]+->2[Bytecode]
+[SolClass]+->1[Compiler]
+
+[EthPM]+-> 0..*[PClassInstance]
+
+[SolInstance]+->1[Bytecode]
+[SolInstance]+->1[Compiler]
+
+[Bytecode]+-> 0..*[LinkReference]
+[Bytecode]+-> 0..*[LinkValue]
+
+[AbstractClass]->[DStorage]
+
+[PClassInstance]->1[AbstractInstance]
+
+[AbstractInstance]<:-[SolInstance]
+[AbstractInstance]<:-[OpenApiInstance]
+
+
+[PClass]+-> 0..*[PFunction]
+
+[PFunction]+-> 1[AbstractFunction]
+[AbstractFunction]<:-[JsFunction]
+[AbstractFunction]<:-[OpenApiFunction]
+[AbstractFunction]<:-[SolFunction]
+
+[Graph]->[DStorage]
+[Graph]+-> 0..*[PFunction]
